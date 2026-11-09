@@ -6,7 +6,9 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config();
+
+// Load the backend .env file reliably when running from the repository root
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -21,7 +23,7 @@ app.use(helmet());
 
 // Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
@@ -87,6 +89,11 @@ app.use((err, req, res, next) => {
 
 // Database connection
 const connectDB = async () => {
+  if (!process.env.MONGO_URI) {
+    console.error('❌ MONGO_URI is missing. Set it in the Render environment variables.');
+    process.exit(1);
+  }
+
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB connected successfully');
@@ -99,9 +106,9 @@ const connectDB = async () => {
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server listening on port ${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'production'}`);
   });
 });
 
