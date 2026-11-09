@@ -1,11 +1,10 @@
 services:
-  # Express API connected to MongoDB Atlas
   - type: web
     name: lost-and-found-api
     runtime: node
     plan: free
     rootDir: lost-and-found/backend
-    buildCommand: npm ci
+    buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -18,12 +17,11 @@ services:
       - key: FRONTEND_URL
         value: https://lost-and-found-frontend.onrender.com
 
-  # React + Vite frontend
   - type: web
     name: lost-and-found-frontend
     runtime: static
     rootDir: lost-and-found/frontend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
